@@ -1,4 +1,9 @@
-class Lox {
+import { Scanner } from "./scanning/Scanner.ts";
+import { Token } from "./scanning/Token.ts";
+
+export class Lox {
+  static hadError: boolean = false;
+
   constructor() {
     if (Deno.args.length >= 2) {
       console.error("Error: too many CLI arguments");
@@ -12,19 +17,38 @@ class Lox {
   }
 
   private static async runFile(path: string) {
-    await Deno.readTextFile(path).then(Lox.run).catch(console.error);
+    const source = await Deno.readTextFile(path);
+
+    Lox.run(source);
+    if (this.hadError) Deno.exit(65);
   }
 
   private static async runPrompt() {
-    console.log("> Lox REPL >>");
+    console.log(">> Lox REPL >");
     const decoder = new TextDecoder();
     for await (const chunk of Deno.stdin.readable) {
       Lox.run(decoder.decode(chunk));
+      this.hadError = false;
     }
   }
 
   private static run(source: string) {
-    console.log("Code is:", source);
+    const scanner = new Scanner(source);
+    const tokens = scanner.scanTokens();
+
+    // For now, just print the tokens.
+    tokens.forEach((token: Token) => {
+      console.log(token);
+    });
+  }
+
+  static error(line: number, message: string) {
+    Lox.report(line, "", message);
+  }
+
+  private static report(line: number, where: string, message: string) {
+    console.error(`[line ${line}] Error ${where}: ${message}`);
+    this.hadError = true
   }
 }
 
