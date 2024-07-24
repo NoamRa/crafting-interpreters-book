@@ -1,0 +1,10 @@
+{
+  "imports": {
+    "std/": "https://deno.land/std@0.224.0/"
+  },
+  "tasks": {
+    "dev": "deno run --allow-read --watch src/Lox.ts",
+    "run": "deno run --allow-read src/Lox.ts",
+    "compile": "deno compile --allow-read --output=build/lox src/Lox.ts"
+  }
+}
