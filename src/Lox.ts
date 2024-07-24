@@ -1,5 +1,5 @@
 class Lox {
-  static main(): void {
+  constructor() {
     if (Deno.args.length >= 2) {
       console.error("Error: too many CLI arguments");
       console.log("Usage: lox [path_to_script] or lox for REPL mode");
@@ -28,4 +28,4 @@ class Lox {
   }
 }
 
-Lox.main();
+new Lox();
