@@ -48,7 +48,7 @@ export class Lox {
 
   private static report(line: number, where: string, message: string) {
     console.error(`[line ${line}] Error ${where}: ${message}`);
-    this.hadError = true
+    this.hadError = true;
   }
 }
 
