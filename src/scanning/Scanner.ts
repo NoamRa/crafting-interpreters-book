@@ -1,6 +1,7 @@
 import { Lox } from "../Lox.ts";
 import { Token } from "./Token.ts";
 import { TokenType } from "./TokenType.ts";
+import { Literal } from "./types.ts";
 
 export class Scanner {
   private source: string;
@@ -23,67 +24,199 @@ export class Scanner {
     return this.tokens;
   }
 
-  scanToken() {
-    const char = this.advance();
-    switch (char) {
-      case "(": {
-        this.addToken(TokenType.LEFT_PAREN, null);
-        break;
-      }
-      case ")": {
-        this.addToken(TokenType.RIGHT_PAREN);
-        break;
-      }
-      case "{": {
-        this.addToken(TokenType.LEFT_BRACE);
-        break;
-      }
-      case "}": {
-        this.addToken(TokenType.RIGHT_BRACE);
-        break;
-      }
-      case ",": {
-        this.addToken(TokenType.COMMA);
-        break;
-      }
-      case ".": {
-        this.addToken(TokenType.DOT);
-        break;
-      }
-      case "-": {
-        this.addToken(TokenType.MINUS);
-        break;
-      }
-      case "+": {
-        this.addToken(TokenType.PLUS);
-        break;
-      }
-      case ";": {
-        this.addToken(TokenType.SEMICOLON);
-        break;
-      }
-      case "*": {
-        this.addToken(TokenType.STAR);
-        break;
-      }
+  private scanToken(): void {
+    const char = this.consume();
 
-      default:
-        Lox.error(this.line, `Unexpected character >> ${char} <<`);
-        break;
+    // Single-character tokens.
+    if (char === "(") {
+      this.addToken(TokenType.LEFT_PAREN, null);
+      return;
     }
+    if (char === ")") {
+      this.addToken(TokenType.RIGHT_PAREN);
+      return;
+    }
+    if (char === "{") {
+      this.addToken(TokenType.LEFT_BRACE);
+      return;
+    }
+    if (char === "}") {
+      this.addToken(TokenType.RIGHT_BRACE);
+      return;
+    }
+    if (char === ",") {
+      this.addToken(TokenType.COMMA);
+      return;
+    }
+    if (char === ".") {
+      this.addToken(TokenType.DOT);
+      return;
+    }
+    if (char === "-") {
+      this.addToken(TokenType.MINUS);
+      return;
+    }
+    if (char === "+") {
+      this.addToken(TokenType.PLUS);
+      return;
+    }
+    if (char === ";") {
+      this.addToken(TokenType.SEMICOLON);
+      return;
+    }
+    if (char === "*") {
+      this.addToken(TokenType.STAR);
+      return;
+    }
+
+    // One or two character tokens.
+    if (char === "!") {
+      this.addToken(this.match("=") ? TokenType.BANG_EQUAL : TokenType.BANG);
+      return;
+    }
+    if (char === "=") {
+      this.addToken(this.match("=") ? TokenType.EQUAL_EQUAL : TokenType.EQUAL);
+      return;
+    }
+    if (char === "<") {
+      this.addToken(this.match("=") ? TokenType.LESS_EQUAL : TokenType.LESS);
+      return;
+    }
+    if (char === ">") {
+      this.addToken(
+        this.match("=") ? TokenType.GREATER_EQUAL : TokenType.GREATER
+      );
+      return;
+    }
+    if (char === "/") {
+      if (this.match("/")) {
+        // It's a comment
+        while (this.look(0) !== "\n" && !this.isAtEnd()) this.advanceCurrent();
+      } else {
+        this.addToken(TokenType.SLASH);
+      }
+      return;
+    }
+
+    // Whitespace and new line
+    if (char === " " || char === "\r" || char === "\t") {
+      return;
+    }
+
+    if (char === "\n") {
+      this.advanceLine();
+      return;
+    }
+
+    // Literals
+    if (char === '"') {
+      this.string();
+      return;
+    }
+    if (this.isDigit(char)) {
+      this.number();
+      return;
+    }
+
+    // Womp Womp
+    const lines = this.source.split("\n");
+    let charCounter = 0;
+    for (const line of lines) {
+      const lineLength = line.length + 1;
+      if (lineLength + charCounter >= this.current) break;
+      charCounter += lineLength;
+    }
+    Lox.error(
+      this.line,
+      [
+        `Unexpected character >> ${char} << ${[
+          `line: ${this.line}`,
+          `character: ${this.start - charCounter}`,
+          `position: ${this.start}`,
+        ].join(", ")}`,
+        lines[this.line - 1],
+        `${" ".repeat(this.start - charCounter)}^`,
+      ].join("\n")
+    );
   }
 
   private isAtEnd(): boolean {
     return this.current >= this.source.length;
   }
 
-  // returns next character and (afterwards) increment current
-  private advance(): string {
-    return this.source.charAt(this.current++);
+  private look(index = 0): string {
+    if (this.isAtEnd()) return "\0";
+    return this.source.charAt(this.current + index);
   }
 
-  private addToken(type: TokenType, literal: object | null = null) {
-    const text = this.source.substring(this.start, this.current);
-    this.tokens.add(new Token(type, text, literal, this.line));
+  private advanceCurrent(): void {
+    this.current += 1;
+  }
+
+  private advanceLine(): void {
+    this.line += 1;
+  }
+
+  private consume(): string {
+    this.advanceCurrent();
+    return this.look(-1);
+  }
+
+  private addToken(type: TokenType, literal: Literal = null) {
+    const lexeme = this.source.substring(this.start, this.current);
+    this.tokens.add(new Token(type, lexeme, literal, this.line));
+  }
+
+  private match(expected: string): boolean {
+    if (this.isAtEnd()) return false;
+    if (this.look() !== expected) return false;
+
+    this.advanceCurrent();
+    return true;
+  }
+
+  private string() {
+    // At this point, the first double-quote was already consumed.
+    while (this.look() !== '"' && !this.isAtEnd()) {
+      if (this.look(1) === "\n") this.advanceLine();
+      this.advanceCurrent();
+    }
+
+    if (this.isAtEnd()) {
+      Lox.error(this.line, "Unterminated string.");
+      return;
+    }
+
+    // Found the closing double-quote:
+    this.advanceCurrent();
+
+    // Trim the surrounding quotes.
+    const literal = this.source.substring(this.start + 1, this.current - 1);
+    this.addToken(TokenType.STRING, literal);
+  }
+
+  private isDigit(char: string): boolean {
+    return char.length === 1 && !isNaN(Number.parseInt(char));
+  }
+
+  private number() {
+    // At this point, the first digit was already consumed.
+    while (this.isDigit(this.look())) {
+      this.advanceCurrent();
+    }
+
+    if (this.look() === "." && this.isDigit(this.look(1))) {
+      this.advanceCurrent();
+      while (this.isDigit(this.look())) {
+        console.log(this.current);
+        this.advanceCurrent();
+        console.log(this.current);
+      }
+    }
+
+    this.addToken(
+      TokenType.NUMBER,
+      Number(this.source.substring(this.start, this.current))
+    );
   }
 }
