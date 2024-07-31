@@ -19,7 +19,7 @@ export class Lox {
   private static async runFile(path: string) {
     const source = await Deno.readTextFile(path);
 
-    Lox.run(source);
+    Lox.run(source.trimEnd());
     if (this.hadError) Deno.exit(65);
   }
 
