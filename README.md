@@ -1,4 +1,4 @@
-# crafting-interpreters-book
+# Crafting Interpreters
 
 Lox implementation, following the book [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom
 
@@ -16,7 +16,7 @@ deno task dev
 deno task run
 ```
 
-### Compile to `.build` folder
+### Compile (to `.build/lox`)
 
 ```sh
 deno task compile
@@ -24,4 +24,6 @@ deno task compile
 
 ## Modes
 
-Lox has two modes: REPL and source. `deno task dev` will start REPL mode, and `deno task dev ./examples/01_language.lox` will read path from source.
+Lox has two modes: REPL and source.
+* REPL - `deno task dev` will start REPL mode
+* SOURCE - `deno task dev ./examples/01_language.lox` will read path from source
