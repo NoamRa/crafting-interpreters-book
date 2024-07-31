@@ -1,4 +1,4 @@
-export enum TokenType {
+export const enum TokenType {
   // Single-character tokens.
   LEFT_PAREN = "LEFT_PAREN",
   RIGHT_PAREN = "RIGHT_PAREN",
@@ -45,6 +45,6 @@ export enum TokenType {
   VAR = "VAR",
   WHILE = "WHILE",
 
-  // and that's it.
+  // That's all, folks.
   EOF = "EOF",
 }
