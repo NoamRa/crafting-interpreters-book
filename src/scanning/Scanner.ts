@@ -10,6 +10,25 @@ export class Scanner {
   private current: number = 0;
   private line: number = 1;
 
+  private keywords: Record<string, TokenType> = {
+    and: TokenType.AND,
+    class: TokenType.CLASS,
+    else: TokenType.ELSE,
+    false: TokenType.FALSE,
+    for: TokenType.FOR,
+    fun: TokenType.FUN,
+    if: TokenType.IF,
+    nil: TokenType.NIL,
+    or: TokenType.OR,
+    print: TokenType.PRINT,
+    return: TokenType.RETURN,
+    super: TokenType.SUPER,
+    this: TokenType.THIS,
+    true: TokenType.TRUE,
+    var: TokenType.VAR,
+    while: TokenType.WHILE,
+  };
+
   constructor(source: string) {
     this.source = source;
   }
@@ -117,6 +136,10 @@ export class Scanner {
       this.number();
       return;
     }
+    if (this.isAlpha(char)) {
+      this.identifier();
+      return;
+    }
 
     // Womp Womp
     const lines = this.source.split("\n");
@@ -199,6 +222,15 @@ export class Scanner {
     return char.length === 1 && !isNaN(Number.parseInt(char));
   }
 
+  private isAlpha(char: string): boolean {
+    // does not support 
+    return /[a-zA-Z_]/.test(char);
+  }
+
+  private isAlphaNumeric(char: string): boolean {
+    return this.isAlpha(char) || this.isDigit(char);
+  }
+
   private number() {
     // At this point, the first digit was already consumed.
     while (this.isDigit(this.look())) {
@@ -218,5 +250,15 @@ export class Scanner {
       TokenType.NUMBER,
       Number(this.source.substring(this.start, this.current))
     );
+  }
+
+  identifier() {
+    while (this.isAlphaNumeric(this.look())) {
+      this.advanceCurrent();
+    }
+
+    const text = this.source.substring(this.start, this.current);
+    const type: TokenType = this.keywords[text] ?? TokenType.IDENTIFIER;
+    this.addToken(type);
   }
 }
