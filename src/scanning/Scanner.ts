@@ -127,6 +127,11 @@ export class Scanner {
       return;
     }
 
+    if (char === "\0") {
+      // ignore NULL character. Without this REPL will mark error at the end of type
+      return;
+    }
+
     // Literals
     if (char === '"') {
       this.string();
@@ -152,7 +157,8 @@ export class Scanner {
     Lox.error(
       this.line,
       [
-        `Unexpected character >> ${char} << ${[
+        `Unexpected character >>${char}<< ${[
+          `charcode: ${char.charCodeAt(0)}`,
           `line: ${this.line}`,
           `character: ${this.start - charCounter}`,
           `position: ${this.start}`,
@@ -223,7 +229,7 @@ export class Scanner {
   }
 
   private isAlpha(char: string): boolean {
-    // does not support 
+    // does not support
     return /[a-zA-Z_]/.test(char);
   }
 
