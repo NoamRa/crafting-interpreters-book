@@ -1,5 +1,8 @@
+import { AstPrinter } from "./parsing/AstPrinter.ts";
+import { Parser } from "./parsing/Parser.ts";
 import { Scanner } from "./scanning/Scanner.ts";
 import { Token } from "./scanning/Token.ts";
+import { TokenType } from "./scanning/TokenType.ts";
 
 export class Lox {
   static hadError: boolean = false;
@@ -33,22 +36,47 @@ export class Lox {
   }
 
   private static run(source: string) {
+    // Print source
+    console.log("----- Source ---");
+    console.log(source.trim());
+    console.log("----- EOF ------");
+    console.log("");
+
     const scanner = new Scanner(source);
     const tokens = scanner.scanTokens();
 
-    // For now, just print the tokens.
-    tokens.forEach((token: Token) => {
-      console.log(token);
-    });
+    // Print the tokens
+    // tokens.forEach((token: Token) => {
+    //   console.log(token);
+    // });
+
+    const parser = new Parser(tokens);
+    const expression = parser.parse();
+
+    if (this.hadError) return;
+
+    console.log(new AstPrinter().print(expression!));
+    
+    // Done
+    console.log("----- Done -----");
+    console.log("");
   }
 
-  static error(line: number, message: string) {
+  static lineError(line: number, message: string) {
     Lox.report(line, "", message);
   }
 
   private static report(line: number, where: string, message: string) {
     console.error(`[line ${line}] Error ${where}: ${message}`);
     this.hadError = true;
+  }
+
+  static tokenError(token: Token, message: string) {
+    if (token.type === TokenType.EOF) {
+      Lox.report(token.line, " at end", message);
+    } else {
+      Lox.report(token.line, ` at '${token.lexeme}'`, message);
+    }
   }
 }
 
