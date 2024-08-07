@@ -5,7 +5,7 @@ import { Literal } from "./types.ts";
 
 export class Scanner {
   private source: string;
-  private tokens: Set<Token> = new Set();
+  private tokens: Token[] = [];
   private start: number = 0;
   private current: number = 0;
   private line: number = 1;
@@ -33,13 +33,13 @@ export class Scanner {
     this.source = source;
   }
 
-  scanTokens(): Set<Token> {
+  scanTokens(): Token[] {
     while (!this.isAtEnd()) {
       this.start = this.current;
       this.scanToken();
     }
 
-    this.tokens.add(new Token(TokenType.EOF, "", null, this.line));
+    this.tokens.push(new Token(TokenType.EOF, "", null, this.line));
     return this.tokens;
   }
 
@@ -154,7 +154,7 @@ export class Scanner {
       if (lineLength + charCounter >= this.current) break;
       charCounter += lineLength;
     }
-    Lox.error(
+    Lox.lineError(
       this.line,
       [
         `Unexpected character >>${char}<< ${[
@@ -193,7 +193,7 @@ export class Scanner {
 
   private addToken(type: TokenType, literal: Literal = null) {
     const lexeme = this.source.substring(this.start, this.current);
-    this.tokens.add(new Token(type, lexeme, literal, this.line));
+    this.tokens.push(new Token(type, lexeme, literal, this.line));
   }
 
   private match(expected: string): boolean {
@@ -212,7 +212,7 @@ export class Scanner {
     }
 
     if (this.isAtEnd()) {
-      Lox.error(this.line, "Unterminated string.");
+      Lox.lineError(this.line, "Unterminated string.");
       return;
     }
 
@@ -246,9 +246,7 @@ export class Scanner {
     if (this.look() === "." && this.isDigit(this.look(1))) {
       this.advanceCurrent();
       while (this.isDigit(this.look())) {
-        console.log(this.current);
         this.advanceCurrent();
-        console.log(this.current);
       }
     }
 
