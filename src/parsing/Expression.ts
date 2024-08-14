@@ -1,28 +1,6 @@
 import { Token } from "../scanning/Token.ts";
 import { Literal } from "../scanning/types.ts";
 
-// type AcceptFn = <T>(visitor<T>) => T
-
-// export class Expr {
-
-// }
-
-// export class Binary {
-//   left: Expr;
-//   operator: Token;
-//   right: Expr;
-
-//   constructor(left: Expr, operator: Token, right: Expr) {
-//     this.left = left;
-//     this.operator = operator;
-//     this.right = right;
-//   }
-
-//   accept(visitor: Visitor<Binary>) {
-//     return visitor.visitBinaryExpr(this);
-//   }
-// }
-
 export interface ExprVisitor<R> {
   visitBinaryExpr(expr: BinaryExpr): R;
   visitGroupingExpr(expr: GroupingExpr): R;
