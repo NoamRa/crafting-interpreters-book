@@ -37,18 +37,18 @@ export class Lox {
 
   private static run(source: string) {
     // Print source
-    console.log("----- Source ---");
-    console.log(source.trim());
-    console.log("----- EOF ------");
-    console.log("");
+    console.debug("----- Source ---");
+    console.debug(source.trim());
+    console.debug("----- EOF ------");
+    console.debug("");
 
     const scanner = new Scanner(source);
     const tokens = scanner.scanTokens();
 
     // Print the tokens
-    // tokens.forEach((token: Token) => {
-    //   console.log(token);
-    // });
+    tokens.forEach((token: Token) => {
+      console.debug(token);
+    });
 
     const parser = new Parser(tokens);
     const expression = parser.parse();
@@ -58,8 +58,8 @@ export class Lox {
     console.log(new AstPrinter().print(expression!));
     
     // Done
-    console.log("----- Done -----");
-    console.log("");
+    console.debug("----- Done -----");
+    console.debug("");
   }
 
   static lineError(line: number, message: string) {

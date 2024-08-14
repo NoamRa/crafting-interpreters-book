@@ -20,11 +20,12 @@ export class Parser {
   parse(): Expr | null {
     try {
       return this.expression();
-    } catch (error) {
+    } catch (_error: unknown) {
       return null;
     }
   }
 
+  //#region expressions
   private expression(): Expr {
     return this.equality();
   }
@@ -111,8 +112,9 @@ export class Parser {
 
     throw this.error(this.peek(), "Expect expression.");
   }
+  //#endregion
 
-  // helpers
+  //#region helpers
   private match(...types: TokenType[]): boolean {
     for (const type of types) {
       if (this.check(type)) {
@@ -136,9 +138,11 @@ export class Parser {
     this.advance();
 
     while (!this.isAtEnd()) {
+      // Statement ended (expect for for loops...)
       if (this.previous().type === TokenType.SEMICOLON) return;
 
       switch (this.peek().type) {
+        // Tokens that usually start a statement
         case TokenType.CLASS:
         case TokenType.FUN:
         case TokenType.VAR:
@@ -177,6 +181,7 @@ export class Parser {
   private previous() {
     return this.tokens[this.current - 1];
   }
+  //#endregion
 }
 
 class ParseError extends Error {
