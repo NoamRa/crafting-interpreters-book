@@ -1,6 +1,12 @@
-import { BinaryExpr, Expr, GroupingExpr, LiteralExpr } from "./Expression.ts";
+import {
+  BinaryExpr,
+  Expr,
+  ExprVisitor,
+  GroupingExpr,
+  LiteralExpr,
+} from "./Expression.ts";
 
-export class AstPrinter {
+export class AstPrinter implements ExprVisitor<string> {
   print(expr: Expr): string {
     return expr.accept(this);
   }

@@ -1,4 +1,6 @@
+import { RuntimeError } from "./Errors/RuntimeError.ts";
 import { AstPrinter } from "./parsing/AstPrinter.ts";
+import { Interpreter } from "./parsing/Interpreter.ts";
 import { Parser } from "./parsing/Parser.ts";
 import { Scanner } from "./scanning/Scanner.ts";
 import { Token } from "./scanning/Token.ts";
@@ -6,6 +8,8 @@ import { TokenType } from "./scanning/TokenType.ts";
 
 export class Lox {
   static hadError: boolean = false;
+  static hadRuntimeError: boolean = false;
+  private static interpreter = new Interpreter();
 
   constructor() {
     if (Deno.args.length >= 2) {
@@ -22,8 +26,9 @@ export class Lox {
   private static async runFile(path: string) {
     const source = await Deno.readTextFile(path);
 
-    Lox.run(source.trimEnd());
+    Lox.run(source.trimEnd() + "\n");
     if (this.hadError) Deno.exit(65);
+    if (this.hadRuntimeError) Deno.exit(70);
   }
 
   private static async runPrompt() {
@@ -42,21 +47,21 @@ export class Lox {
     console.debug("----- EOF ------");
     console.debug("");
 
-    const scanner = new Scanner(source);
-    const tokens = scanner.scanTokens();
+    const tokens = new Scanner(source).scanTokens();
 
     // Print the tokens
     tokens.forEach((token: Token) => {
       console.debug(token);
     });
 
-    const parser = new Parser(tokens);
-    const expression = parser.parse();
+    const expression = new Parser(tokens).parse();
 
-    if (this.hadError) return;
+    if (this.hadError || !expression) return;
 
-    console.log(new AstPrinter().print(expression!));
-    
+    console.debug(new AstPrinter().print(expression));
+    console.debug("----- Result ----");
+    this.interpreter.interpret(expression);
+
     // Done
     console.debug("----- Done -----");
     console.debug("");
@@ -77,6 +82,12 @@ export class Lox {
     } else {
       Lox.report(token.line, ` at '${token.lexeme}'`, message);
     }
+  }
+
+  static runtimeError(error: RuntimeError) {
+    this.hadRuntimeError = true;
+    console.error(error.message);
+    console.error(`[line ${error.token.line}]`);
   }
 }
 

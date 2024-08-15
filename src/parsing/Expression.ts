@@ -1,5 +1,5 @@
 import { Token } from "../scanning/Token.ts";
-import { Literal } from "../scanning/types.ts";
+import type { LiteralValue } from "../scanning/types.ts";
 
 export interface ExprVisitor<R> {
   visitBinaryExpr(expr: BinaryExpr): R;
@@ -48,7 +48,6 @@ export class GroupingExpr implements Expr {
   }
 }
 
-type LiteralValue = true | false | Literal; // TODO expand
 export class LiteralExpr implements Expr {
   value: LiteralValue;
 
