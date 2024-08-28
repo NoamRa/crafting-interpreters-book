@@ -7,7 +7,8 @@ import {
   GroupingExpr,
   LiteralExpr,
   UnaryExpr,
-} from "./Expression.ts";
+} from "../AST/Expression.ts";
+import { ExpressionStmt, PrintStmt, Stmt } from "../AST/Stmt.ts";
 
 export class Parser {
   private tokens: Token[];
@@ -17,12 +18,13 @@ export class Parser {
     this.tokens = tokens;
   }
 
-  parse(): Expr | null {
-    try {
-      return this.expression();
-    } catch (_error: unknown) {
-      return null;
+  parse(): Stmt[] {
+    const statements: Stmt[] = [];
+    while (!this.isAtEnd()) {
+      statements.push(this.statement());
     }
+
+    return statements;
   }
 
   //#region expressions
@@ -112,6 +114,26 @@ export class Parser {
 
     throw this.error(this.peek(), "Expect expression.");
   }
+  //#endregion
+
+  //#region statements
+  private statement(): Stmt {
+    if (this.match(TokenType.PRINT)) return this.printStatement();
+    return this.expressionStatement();
+  }
+
+  private printStatement() {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
+    return new PrintStmt(value);
+  }
+
+  private expressionStatement() {
+    const value = this.expression();
+    this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
+    return new ExpressionStmt(value);
+  }
+
   //#endregion
 
   //#region helpers

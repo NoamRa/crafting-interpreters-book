@@ -1,5 +1,5 @@
 import { RuntimeError } from "./Errors/RuntimeError.ts";
-import { AstPrinter } from "./parsing/AstPrinter.ts";
+import { AstPrinter } from "./AST/AstPrinter.ts";
 import { Interpreter } from "./parsing/Interpreter.ts";
 import { Parser } from "./parsing/Parser.ts";
 import { Scanner } from "./scanning/Scanner.ts";
@@ -42,29 +42,28 @@ export class Lox {
 
   private static run(source: string) {
     // Print source
-    console.debug("----- Source ---");
-    console.debug(source.trim());
-    console.debug("----- EOF ------");
-    console.debug("");
+    // console.debug("----- Source ---");
+    // console.debug(source.trim());
+    // console.debug("----- EOF ------");
+    // console.debug("");
 
     const tokens = new Scanner(source).scanTokens();
 
     // Print the tokens
-    tokens.forEach((token: Token) => {
-      console.debug(token);
-    });
+    // tokens.forEach((token: Token) => {
+    //   console.debug(token);
+    // });
 
-    const expression = new Parser(tokens).parse();
+    const statements = new Parser(tokens).parse();
 
-    if (this.hadError || !expression) return;
+    if (this.hadError || !statements || statements.length === 0) return;
 
-    console.debug(new AstPrinter().print(expression));
-    console.debug("----- Result ----");
-    this.interpreter.interpret(expression);
+    // console.debug("----- Result ----");
+    this.interpreter.interpret(statements);
 
     // Done
-    console.debug("----- Done -----");
-    console.debug("");
+    // console.debug("----- Done -----");
+    // console.debug("");
   }
 
   static lineError(line: number, message: string) {

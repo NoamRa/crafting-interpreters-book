@@ -10,18 +10,23 @@ import {
   GroupingExpr,
   LiteralExpr,
   UnaryExpr,
-} from "./Expression.ts";
+} from "../AST/Expression.ts";
+import { ExpressionStmt, PrintStmt, Stmt, StmtVisitor } from "../AST/Stmt.ts";
 
-export class Interpreter implements ExprVisitor<LiteralValue> {
-  public interpret(expression: Expr) {
+export class Interpreter
+  implements ExprVisitor<LiteralValue>, StmtVisitor<void>
+{
+  public interpret(statements: Stmt[]) {
     try {
-      const value = this.evaluate(expression);
-      console.log(this.stringify(value));
+      for (const statement of statements) {
+        this.execute(statement);
+      }
     } catch (error: unknown) {
       Lox.runtimeError(error as RuntimeError);
     }
   }
 
+  //#region Expr visitor
   public visitLiteralExpr(expr: LiteralExpr) {
     return expr.value;
   }
@@ -110,10 +115,27 @@ export class Interpreter implements ExprVisitor<LiteralValue> {
     return null;
   }
 
-  //
   private evaluate(expr: Expr): LiteralValue {
     return expr.accept(this);
   }
+  //#endregion
+
+  //#region Stmt visitors
+  visitExpressionStmt(stmt: ExpressionStmt) {
+    this.evaluate(stmt.expression);
+  }
+
+  visitPrintStmt(stmt: PrintStmt): void {
+    const value = this.evaluate(stmt.expression);
+    console.log(this.stringify(value));
+  }
+
+  execute(statement: Stmt) {
+    statement.accept(this);
+  }
+  //#endregion
+
+  // helpers
 
   private isTruthy(value: LiteralValue) {
     if (value === null) return false;
