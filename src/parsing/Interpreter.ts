@@ -10,12 +10,22 @@ import {
   GroupingExpr,
   LiteralExpr,
   UnaryExpr,
+  VariableExpr,
 } from "../AST/Expression.ts";
-import { ExpressionStmt, PrintStmt, Stmt, StmtVisitor } from "../AST/Stmt.ts";
+import {
+  ExpressionStmt,
+  PrintStmt,
+  Stmt,
+  StmtVisitor,
+  VariableStmt,
+} from "../AST/Stmt.ts";
+import { Environment } from "./Environment.ts";
 
 export class Interpreter
   implements ExprVisitor<LiteralValue>, StmtVisitor<void>
 {
+  private environment = new Environment();
+
   public interpret(statements: Stmt[]) {
     try {
       for (const statement of statements) {
@@ -125,9 +135,19 @@ export class Interpreter
     this.evaluate(stmt.expression);
   }
 
-  visitPrintStmt(stmt: PrintStmt): void {
+  visitPrintStmt(stmt: PrintStmt) {
     const value = this.evaluate(stmt.expression);
     console.log(this.stringify(value));
+  }
+
+  public visitVariableStmt(stmt: VariableStmt) {
+    const value =
+      stmt.initializer !== null ? this.evaluate(stmt.initializer) : null;
+    this.environment.define(stmt.name.lexeme, value);
+  }
+
+  public visitVariableExpr(expr: VariableExpr): LiteralValue {
+    return this.environment.get(expr.name)!;
   }
 
   execute(statement: Stmt) {

@@ -1,3 +1,4 @@
+import { Token } from "../scanning/Token.ts";
 import { Expr } from "./Expression.ts";
 
 export interface StmtVisitor<R> {
@@ -8,7 +9,7 @@ export interface StmtVisitor<R> {
   //   visitIfStmt(stmt: If): R;
   visitPrintStmt(stmt: PrintStmt): R;
   //   visitReturnStmt(stmt: Return): R;
-  //   visitVarStmt(stmt: Var): R;
+  visitVariableStmt(stmt: VariableStmt): R;
   //   visitWhileStmt(stmt: While): R;
 }
 
@@ -37,5 +38,19 @@ export class PrintStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitPrintStmt(this);
+  }
+}
+
+export class VariableStmt implements Stmt {
+  name: Token;
+  initializer: Expr;
+
+  constructor(name: Token, initializer: Expr) {
+    this.name = name;
+    this.initializer = initializer;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitVariableStmt(this);
   }
 }

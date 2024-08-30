@@ -7,8 +7,9 @@ import {
   GroupingExpr,
   LiteralExpr,
   UnaryExpr,
+  VariableExpr,
 } from "../AST/Expression.ts";
-import { ExpressionStmt, PrintStmt, Stmt } from "../AST/Stmt.ts";
+import { ExpressionStmt, PrintStmt, Stmt, VariableStmt } from "../AST/Stmt.ts";
 
 export class Parser {
   private tokens: Token[];
@@ -21,7 +22,7 @@ export class Parser {
   parse(): Stmt[] {
     const statements: Stmt[] = [];
     while (!this.isAtEnd()) {
-      statements.push(this.statement());
+      statements.push(this.declaration() as Stmt);
     }
 
     return statements;
@@ -106,6 +107,10 @@ export class Parser {
       return new LiteralExpr(this.previous().literal);
     }
 
+    if (this.match(TokenType.IDENTIFIER)) {
+      return new VariableExpr(this.previous());
+    }
+
     if (this.match(TokenType.LEFT_PAREN)) {
       const expr = this.expression();
       this.consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.");
@@ -132,6 +137,31 @@ export class Parser {
     const value = this.expression();
     this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
     return new ExpressionStmt(value);
+  }
+
+  //#endregion
+
+  //#region declarations
+  private declaration() {
+    try {
+      return this.match(TokenType.VAR)
+        ? this.varDeclaration()
+        : this.statement();
+    } catch (error) {
+      this.synchronize();
+    }
+  }
+
+  private varDeclaration(): Stmt {
+    const name = this.consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+    let initializer: Expr = null as unknown as Expr;
+    if (this.match(TokenType.EQUAL)) {
+      initializer = this.expression();
+    }
+
+    this.consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+    return new VariableStmt(name, initializer);
   }
 
   //#endregion
