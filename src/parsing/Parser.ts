@@ -28,7 +28,7 @@ export class Parser {
     return statements;
   }
 
-  //#region expressions
+  // #region expressions
   private expression(): Expr {
     return this.equality();
   }
@@ -119,9 +119,9 @@ export class Parser {
 
     throw this.error(this.peek(), "Expect expression.");
   }
-  //#endregion
+  // #endregion
 
-  //#region statements
+  // #region statements
   private statement(): Stmt {
     if (this.match(TokenType.PRINT)) return this.printStatement();
     return this.expressionStatement();
@@ -139,9 +139,9 @@ export class Parser {
     return new ExpressionStmt(value);
   }
 
-  //#endregion
+  // #endregion
 
-  //#region declarations
+  // #region declarations
   private declaration() {
     try {
       return this.match(TokenType.VAR)
@@ -164,9 +164,9 @@ export class Parser {
     return new VariableStmt(name, initializer);
   }
 
-  //#endregion
+  // #endregion
 
-  //#region helpers
+  // #region helpers
   private match(...types: TokenType[]): boolean {
     for (const type of types) {
       if (this.check(type)) {
@@ -233,5 +233,5 @@ export class Parser {
   private previous() {
     return this.tokens[this.current - 1];
   }
-  //#endregion
+  // #endregion
 }

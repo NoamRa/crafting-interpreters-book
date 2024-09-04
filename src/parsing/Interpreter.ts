@@ -36,7 +36,7 @@ export class Interpreter
     }
   }
 
-  //#region Expr visitor
+  // #region Expr visitor
   public visitLiteralExpr(expr: LiteralExpr) {
     return expr.value;
   }
@@ -128,9 +128,9 @@ export class Interpreter
   private evaluate(expr: Expr): LiteralValue {
     return expr.accept(this);
   }
-  //#endregion
+  // #endregion
 
-  //#region Stmt visitors
+  // #region Stmt visitors
   visitExpressionStmt(stmt: ExpressionStmt) {
     this.evaluate(stmt.expression);
   }
@@ -153,9 +153,9 @@ export class Interpreter
   execute(statement: Stmt) {
     statement.accept(this);
   }
-  //#endregion
+  // #endregion
 
-  // helpers
+  // #region helpers
 
   private isTruthy(value: LiteralValue) {
     if (value === null) return false;
@@ -184,4 +184,5 @@ export class Interpreter
     if (value === null) return "nil";
     return value.toString();
   }
+  // #endregion
 }
