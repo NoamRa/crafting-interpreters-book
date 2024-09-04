@@ -14,6 +14,7 @@ import {
   VariableExpr,
 } from "../AST/Expression.ts";
 import {
+  BlockStmt,
   ExpressionStmt,
   PrintStmt,
   Stmt,
@@ -157,8 +158,26 @@ export class Interpreter
     return this.environment.get(expr.name)!;
   }
 
+  public visitBlockStmt(stmt: BlockStmt) {
+    this.executeBlock(stmt.statements, new Environment(this.environment));
+    return null;
+  }
+
   execute(statement: Stmt) {
     statement.accept(this);
+  }
+
+  executeBlock(statements: Stmt[], environment: Environment) {
+    const originalEnvironment = this.environment;
+    
+    try {
+      this.environment = environment;
+      for (const statement of statements) {
+        this.execute(statement);
+      }
+    } finally {
+      this.environment = originalEnvironment;
+    }
   }
   // #endregion
 

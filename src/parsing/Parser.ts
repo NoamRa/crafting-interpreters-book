@@ -10,7 +10,13 @@ import {
   UnaryExpr,
   VariableExpr,
 } from "../AST/Expression.ts";
-import { ExpressionStmt, PrintStmt, Stmt, VariableStmt } from "../AST/Stmt.ts";
+import {
+  BlockStmt,
+  ExpressionStmt,
+  PrintStmt,
+  Stmt,
+  VariableStmt,
+} from "../AST/Stmt.ts";
 
 export class Parser {
   private tokens: Token[];
@@ -125,6 +131,7 @@ export class Parser {
   // #region statements
   private statement(): Stmt {
     if (this.match(TokenType.PRINT)) return this.printStatement();
+    if (this.match(TokenType.LEFT_BRACE)) return new BlockStmt(this.block());
     return this.expressionStatement();
   }
 
@@ -138,6 +145,16 @@ export class Parser {
     const value = this.expression();
     this.consume(TokenType.SEMICOLON, "Expect ';' after value.");
     return new ExpressionStmt(value);
+  }
+
+  private block(): Stmt[] {
+    const statements: Stmt[] = [];
+    while (!this.check(TokenType.RIGHT_BRACE) && !this.isAtEnd()) {
+      statements.push(this.declaration());
+    }
+
+    this.consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+    return statements;
   }
 
   private assignment(): Expr {
@@ -159,7 +176,8 @@ export class Parser {
   // #endregion
 
   // #region declarations
-  private declaration() {
+  // @ts-ignore always return Stmt, unless error... and then it's an error
+  private declaration(): Stmt {
     try {
       return this.match(TokenType.VAR)
         ? this.varDeclaration()

@@ -2,19 +2,31 @@ import { Token } from "../scanning/Token.ts";
 import { Expr } from "./Expression.ts";
 
 export interface StmtVisitor<R> {
-  //   visitBlockStmt(stmt: Block): R;
-  //   visitClassStmt(stmt: Class): R;
+  visitBlockStmt(stmt: BlockStmt): R;
+  //   visitClassStmt(stmt: ClassStmt): R;
   visitExpressionStmt(stmt: ExpressionStmt): R;
-  //   visitFunctionStmt(stmt: Function): R;
-  //   visitIfStmt(stmt: If): R;
+  //   visitFunctionStmt(stmt: FunctionStmt): R;
+  //   visitIfStmt(stmt: IfStmt): R;
   visitPrintStmt(stmt: PrintStmt): R;
-  //   visitReturnStmt(stmt: Return): R;
+  //   visitReturnStmt(stmt: ReturnStmt): R;
   visitVariableStmt(stmt: VariableStmt): R;
-  //   visitWhileStmt(stmt: While): R;
+  //   visitWhileStmt(stmt: WhileStmt): R;
 }
 
 export interface Stmt {
   accept<R>(visitor: StmtVisitor<R>): R;
+}
+
+export class BlockStmt implements Stmt {
+  statements: Stmt[];
+
+  constructor(statements: Stmt[]) {
+    this.statements = statements;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitBlockStmt(this);
+  }
 }
 
 export class ExpressionStmt implements Stmt {
