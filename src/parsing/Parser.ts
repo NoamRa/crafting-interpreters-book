@@ -2,6 +2,7 @@ import { Lox } from "../Lox.ts";
 import { Token } from "../scanning/Token.ts";
 import { TokenType } from "../scanning/TokenType.ts";
 import {
+  AssignExpr,
   BinaryExpr,
   Expr,
   GroupingExpr,
@@ -30,7 +31,7 @@ export class Parser {
 
   // #region expressions
   private expression(): Expr {
-    return this.equality();
+    return this.assignment();
   }
 
   private equality(): Expr {
@@ -139,6 +140,22 @@ export class Parser {
     return new ExpressionStmt(value);
   }
 
+  private assignment(): Expr {
+    const expr = this.equality();
+
+    if (this.match(TokenType.EQUAL)) {
+      const value = this.assignment();
+
+      if (expr instanceof VariableExpr) {
+        return new AssignExpr(expr.name, value);
+      }
+
+      const equals = this.previous();
+      this.error(equals, "Invalid assignment target.");
+    }
+
+    return expr;
+  }
   // #endregion
 
   // #region declarations

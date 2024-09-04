@@ -4,6 +4,7 @@ import { Token } from "../scanning/Token.ts";
 import { TokenType } from "../scanning/TokenType.ts";
 import { LiteralValue } from "../scanning/types.ts";
 import {
+  AssignExpr,
   BinaryExpr,
   Expr,
   ExprVisitor,
@@ -125,25 +126,31 @@ export class Interpreter
     return null;
   }
 
+  public visitVariableStmt(stmt: VariableStmt) {
+    const value =
+      stmt.initializer !== null ? this.evaluate(stmt.initializer) : null;
+    this.environment.define(stmt.name.lexeme, value);
+  }
+
   private evaluate(expr: Expr): LiteralValue {
     return expr.accept(this);
   }
   // #endregion
 
   // #region Stmt visitors
-  visitExpressionStmt(stmt: ExpressionStmt) {
+  public visitExpressionStmt(stmt: ExpressionStmt) {
     this.evaluate(stmt.expression);
   }
 
-  visitPrintStmt(stmt: PrintStmt) {
+  public visitPrintStmt(stmt: PrintStmt) {
     const value = this.evaluate(stmt.expression);
     console.log(this.stringify(value));
   }
 
-  public visitVariableStmt(stmt: VariableStmt) {
-    const value =
-      stmt.initializer !== null ? this.evaluate(stmt.initializer) : null;
-    this.environment.define(stmt.name.lexeme, value);
+  public visitAssignExpr(expr: AssignExpr): LiteralValue {
+    const value = this.evaluate(expr.value);
+    this.environment.assign(expr.name, value);
+    return value;
   }
 
   public visitVariableExpr(expr: VariableExpr): LiteralValue {
