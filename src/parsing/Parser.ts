@@ -13,6 +13,7 @@ import {
 import {
   BlockStmt,
   ExpressionStmt,
+  IfStmt,
   PrintStmt,
   Stmt,
   VariableStmt,
@@ -130,9 +131,21 @@ export class Parser {
 
   // #region statements
   private statement(): Stmt {
+    if (this.match(TokenType.IF)) return this.ifStatement();
     if (this.match(TokenType.PRINT)) return this.printStatement();
     if (this.match(TokenType.LEFT_BRACE)) return new BlockStmt(this.block());
     return this.expressionStatement();
+  }
+
+  private ifStatement() {
+    this.consume(TokenType.LEFT_PAREN, "Expect '(', after 'if'.");
+    const condition = this.expression();
+    this.consume(TokenType.RIGHT_PAREN, "Expect ')', after 'if'.");
+
+    const thenBranch = this.statement();
+    const elseBranch = this.match(TokenType.ELSE) ? this.statement() : null;
+
+    return new IfStmt(condition, thenBranch, elseBranch);
   }
 
   private printStatement() {

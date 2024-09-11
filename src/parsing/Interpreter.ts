@@ -16,6 +16,7 @@ import {
 import {
   BlockStmt,
   ExpressionStmt,
+  IfStmt,
   PrintStmt,
   Stmt,
   StmtVisitor,
@@ -143,6 +144,15 @@ export class Interpreter
     this.evaluate(stmt.expression);
   }
 
+  public visitIfStmt(stmt: IfStmt) {
+    if (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.thenBranch);
+    } else if (stmt.elseBranch !== null) {
+      this.execute(stmt.elseBranch);
+    }
+    return null
+  }
+
   public visitPrintStmt(stmt: PrintStmt) {
     const value = this.evaluate(stmt.expression);
     console.log(this.stringify(value));
@@ -169,7 +179,7 @@ export class Interpreter
 
   executeBlock(statements: Stmt[], environment: Environment) {
     const originalEnvironment = this.environment;
-    
+
     try {
       this.environment = environment;
       for (const statement of statements) {
