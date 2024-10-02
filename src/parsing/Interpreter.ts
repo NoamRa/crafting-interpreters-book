@@ -10,6 +10,7 @@ import {
   ExprVisitor,
   GroupingExpr,
   LiteralExpr,
+  LogicalExpr,
   UnaryExpr,
   VariableExpr,
 } from "../AST/Expression.ts";
@@ -42,6 +43,18 @@ export class Interpreter
   // #region Expr visitor
   public visitLiteralExpr(expr: LiteralExpr) {
     return expr.value;
+  }
+
+  public visitLogicalExpr(expr: LogicalExpr) {
+    const left = this.evaluate(expr.left);
+
+    if (expr.operator.type === TokenType.OR) {
+      if (this.isTruthy(left)) return left;
+    } else if (!this.isTruthy(left)) {
+      return left;
+    }
+
+    return this.evaluate(expr.right);
   }
 
   public visitGroupingExpr(expr: GroupingExpr) {
@@ -150,7 +163,7 @@ export class Interpreter
     } else if (stmt.elseBranch !== null) {
       this.execute(stmt.elseBranch);
     }
-    return null
+    return null;
   }
 
   public visitPrintStmt(stmt: PrintStmt) {
