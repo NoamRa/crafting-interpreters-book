@@ -22,7 +22,7 @@ import {
   Stmt,
   StmtVisitor,
   VariableStmt,
-} from "../AST/Stmt.ts";
+} from "../AST/Statement.ts";
 import { Environment } from "./Environment.ts";
 
 export class Interpreter

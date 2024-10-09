@@ -18,7 +18,7 @@ import {
   PrintStmt,
   Stmt,
   VariableStmt,
-} from "../AST/Stmt.ts";
+} from "../AST/Statement.ts";
 
 export class Parser {
   private tokens: Token[];

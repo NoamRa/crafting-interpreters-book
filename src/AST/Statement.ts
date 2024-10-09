@@ -45,7 +45,7 @@ export class IfStmt implements Stmt {
   condition: Expr;
   thenBranch: Stmt;
   elseBranch: Stmt | null;
-  
+
   constructor(condition: Expr, thenBranch: Stmt, elseBranch: Stmt | null) {
     this.condition = condition;
     this.thenBranch = thenBranch;
