@@ -22,6 +22,7 @@ import {
   Stmt,
   StmtVisitor,
   VariableStmt,
+  WhileStmt,
 } from "../AST/Statement.ts";
 import { Environment } from "./Environment.ts";
 
@@ -141,10 +142,14 @@ export class Interpreter
     return null;
   }
 
-  public visitVariableStmt(stmt: VariableStmt) {
-    const value =
-      stmt.initializer !== null ? this.evaluate(stmt.initializer) : null;
-    this.environment.define(stmt.name.lexeme, value);
+  public visitAssignExpr(expr: AssignExpr): LiteralValue {
+    const value = this.evaluate(expr.value);
+    this.environment.assign(expr.name, value);
+    return value;
+  }
+
+  public visitVariableExpr(expr: VariableExpr): LiteralValue {
+    return this.environment.get(expr.name)!;
   }
 
   private evaluate(expr: Expr): LiteralValue {
@@ -171,14 +176,16 @@ export class Interpreter
     console.log(this.stringify(value));
   }
 
-  public visitAssignExpr(expr: AssignExpr): LiteralValue {
-    const value = this.evaluate(expr.value);
-    this.environment.assign(expr.name, value);
-    return value;
+  public visitVariableStmt(stmt: VariableStmt) {
+    const value =
+      stmt.initializer !== null ? this.evaluate(stmt.initializer) : null;
+    this.environment.define(stmt.name.lexeme, value);
   }
 
-  public visitVariableExpr(expr: VariableExpr): LiteralValue {
-    return this.environment.get(expr.name)!;
+  public visitWhileStmt(stmt: WhileStmt) {
+    while (this.isTruthy(this.evaluate(stmt.condition))) {
+      this.execute(stmt.body);
+    }
   }
 
   public visitBlockStmt(stmt: BlockStmt) {

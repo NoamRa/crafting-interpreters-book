@@ -10,7 +10,7 @@ export interface StmtVisitor<R> {
   visitPrintStmt(stmt: PrintStmt): R;
   //   visitReturnStmt(stmt: ReturnStmt): R;
   visitVariableStmt(stmt: VariableStmt): R;
-  //   visitWhileStmt(stmt: WhileStmt): R;
+  visitWhileStmt(stmt: WhileStmt): R;
 }
 
 export interface Stmt {
@@ -80,5 +80,19 @@ export class VariableStmt implements Stmt {
 
   accept<R>(visitor: StmtVisitor<R>): R {
     return visitor.visitVariableStmt(this);
+  }
+}
+
+export class WhileStmt implements Stmt {
+  condition: Expr;
+  body: Stmt;
+
+  constructor(condition: Expr, body: Stmt) {
+    this.condition = condition;
+    this.body = body;
+  }
+
+  accept<R>(visitor: StmtVisitor<R>): R {
+    return visitor.visitWhileStmt(this);
   }
 }

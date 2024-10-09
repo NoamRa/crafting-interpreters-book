@@ -1,0 +1,9 @@
+var c = 1;
+
+print "Counting from 1 to 10:";
+while (c <= 10) {
+    print c;
+    c = c + 1;
+}
+
+print "Done counting!";
